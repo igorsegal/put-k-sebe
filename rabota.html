@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Уйти или остаться</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Piazzolla:ital,opsz,wght@0,8..30,500;1,8..30,400;1,8..30,500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one narrow column hung on a vertical "thread" of the dialogue;
+   the question itself, set large in italic, is the only loud element. */
+:root {
+  --paper: #edf0f3;
+  --sheet: #f8f9fb;
+  --ink: #18222d;
+  --muted: #5b6875;
+  --line: #cdd5dd;
+  --accent: #0e6a5b;
+  --accent-ink: #ffffff;
+  --mark: #b97a12;
+  --font-display: "Piazzolla", "Georgia", "Times New Roman", serif;
+  --font-body: "Golos Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11171e;
+    --sheet: #19212a;
+    --ink: #e7ecf1;
+    --muted: #96a3b0;
+    --line: #2d3945;
+    --accent: #58c2ab;
+    --accent-ink: #0b1915;
+    --mark: #e0a94a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11171e;
+  --sheet: #19212a;
+  --ink: #e7ecf1;
+  --muted: #96a3b0;
+  --line: #2d3945;
+  --accent: #58c2ab;
+  --accent-ink: #0b1915;
+  --mark: #e0a94a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+header.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 20px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.brand { font-weight: 600; letter-spacing: 0.01em; }
+.brand span { color: var(--muted); font-weight: 400; }
+.linkbtn {
+  font: inherit;
+  font-size: 15px;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.resume {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* the thread */
+.thread {
+  position: relative;
+  padding-left: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.thread::before {
+  content: "";
+  position: absolute;
+  left: 7px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--line);
+}
+.thread::after {
+  content: "";
+  position: absolute;
+  left: 2px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--mark);
+}
+.count {
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+h1.question {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(28px, 5.2vw, 40px);
+  line-height: 1.18;
+  margin: 0;
+  text-wrap: balance;
+}
+.hint { color: var(--muted); margin: 0; max-width: 60ch; }
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 14px 16px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  resize: vertical;
+}
+textarea:focus-visible, button:focus-visible, .chip:focus-visible {
+  outline: 3px solid var(--mark);
+  outline-offset: 2px;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  font: inherit;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--sheet);
+  color: var(--ink);
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.chip:disabled { opacity: 0.45; cursor: not-allowed; }
+.picked { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.weigh { display: flex; flex-direction: column; gap: 18px; }
+.weigh-row { display: flex; flex-direction: column; gap: 8px; }
+.weigh-name { font-weight: 600; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg .chip { border-radius: 6px; }
+
+nav.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding-left: 30px;
+}
+button.go, button.back {
+  font: inherit;
+  font-weight: 600;
+  padding: 13px 26px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button.go { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
+button.back { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.note { font-size: 15px; color: var(--muted); }
+
+/* summary */
+.sum { display: flex; flex-direction: column; gap: 26px; }
+.sum h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(28px, 5vw, 38px);
+  line-height: 1.15;
+  margin: 0;
+  text-wrap: balance;
+}
+.sum h2 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.block { border-top: 1px solid var(--line); padding-top: 16px; }
+.block p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 65ch; }
+.block p.empty { color: var(--muted); }
+.scale { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.scale li { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+.tag {
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.tag.leave { border-color: var(--mark); color: var(--mark); }
+.tag.stay { border-color: var(--accent); color: var(--accent); }
+.reading {
+  background: var(--sheet);
+  border-left: 4px solid var(--mark);
+  padding: 16px 18px;
+  border-radius: 0 6px 6px 0;
+}
+.reading p { margin: 0; max-width: 62ch; }
+.reading p + p { margin-top: 10px; }
+footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+footer p { margin: 0; max-width: 70ch; }
+@media (prefers-reduced-motion: no-preference) {
+  .thread > * { animation: rise 0.35s ease both; }
+  @keyframes rise { from { transform: translateY(6px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Уйти или остаться <span>· разбор решения о работе</span></div>
+    <button type="button" class="linkbtn" id="btn-restart">Начать заново</button>
+  </header>
+  <main id="app" aria-live="polite"></main>
+  <footer>
+    <p>Здесь никто не решает за вас. Вопросы помогают услышать собственные доводы. Ответы остаются в вашем браузере и никуда не отправляются. Это не психологическая помощь и не замена разговору со специалистом.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var VALUES = [
+    "Свобода и самостоятельность", "Стабильность и безопасность", "Развитие и интерес",
+    "Деньги и достаток", "Признание и статус", "Семья и близкие",
+    "Здоровье и покой", "Польза людям", "Творчество",
+    "Отношения с коллегами", "Достижения", "Смысл",
+    "Честность и чистая совесть"
+  ];
+
+  var STEPS = [
+    { id: "what", type: "text",
+      q: "Что именно вы решаете?",
+      hint: "Опишите ситуацию в двух-трёх предложениях, как рассказали бы другу. Какая работа, сколько вы там, между чем выбираете." },
+    { id: "why_now", type: "text",
+      q: "Почему этот вопрос встал именно сейчас?",
+      hint: "Что произошло или накопилось? Год назад вы об этом думали?" },
+    { id: "conscience", type: "text",
+      q: "Есть ли в этой работе что-то, что идёт против ваших принципов?",
+      hint: "Если есть, опишите один конкретный случай: что произошло и что вы при этом почувствовали. Если нет, так и напишите." },
+    { id: "values", type: "values",
+      q: "Что для вас сейчас важнее всего в жизни?",
+      hint: "Выберите три. Не то, что должно быть важно, а то, ради чего вы на деле готовы чем-то пожертвовать." },
+    { id: "weigh", type: "weigh",
+      q: "Где у каждой из этих трёх ценностей больше шансов?",
+      hint: "Отвечайте по ощущению, не высчитывая." },
+    { id: "fear_leave", type: "text",
+      q: "Чего вы боитесь, если уйдёте?",
+      hint: "Назовите самое плохое, что реально может случиться." },
+    { id: "plan_b", type: "text",
+      q: "Допустим, это случилось. Что вы будете делать?",
+      hint: "На что жить первые месяцы, к кому обратиться, что вы умеете такого, за что платят?" },
+    { id: "fear_stay", type: "text",
+      q: "Прошёл год, вы остались, и ничего не изменилось. Что вы чувствуете?",
+      hint: "Представьте обычное утро понедельника через год." },
+    { id: "tried", type: "text",
+      q: "Можно ли исправить то, что вас мучает, оставаясь на этой работе?",
+      hint: "Что вы для этого уже делали сами? Что ещё возможно: разговор с руководителем, другая роль, другие условия? Или это от вас не зависит?" },
+    { id: "people_role", type: "text", block: true,
+      q: "Кем вы себя чувствуете среди коллег?",
+      hint: "Своим, чужим, незаменимым, лишним? Что изменилось за последний год?" },
+    { id: "people_holds", type: "text", block: true,
+      q: "Если убрать зарплату и должность, что вас держит на этой работе?",
+      hint: "Люди, дело, привычка, чувство долга, что-то ещё?" },
+    { id: "people_miss", type: "text", block: true,
+      q: "По кому или по чему вы будете скучать, если уйдёте?",
+      hint: "Назовите конкретных людей и конкретные вещи." },
+    { id: "people_grown", type: "text", block: true,
+      q: "Что вы на этой работе уже переросли?",
+      hint: "А чему ещё можете здесь научиться?" },
+    { id: "people_opinion", type: "text", block: true,
+      q: "Чьё мнение о вашем уходе для вас важно?",
+      hint: "Что эти люди скажут? И что вы почувствуете, услышав это?" },
+    { id: "friend", type: "text",
+      q: "Что бы вы сказали близкому другу в точно такой же ситуации?",
+      hint: "Со стороны мы часто видим яснее, чем изнутри." },
+    { id: "step", type: "text",
+      q: "Какой маленький шаг на этой неделе даст вам больше ясности?",
+      hint: "Не само решение, а разведка: с кем поговорить, что узнать, что посчитать." }
+  ];
+
+  var state = { i: 0, answers: {}, values: [], weigh: {}, after: "" };
+  var app = document.getElementById("app");
+  var resumed = false;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function save() {
+    try { localStorage.setItem("decision-draft", JSON.stringify(state)); } catch (e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem("decision-draft");
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && typeof s.i === "number") {
+          state = Object.assign(state, s);
+          if (state.i > 0) resumed = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  function restart() {
+    state = { i: 0, answers: {}, values: [], weigh: {}, after: "" };
+    resumed = false;
+    go(0);
+  }
+  document.getElementById("btn-restart").addEventListener("click", restart);
+
+  function go(n) {
+    state.i = Math.max(0, Math.min(STEPS.length, n));
+    save();
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function render() {
+    app.textContent = "";
+    if (state.i >= STEPS.length) { renderSummary(); return; }
+    var s = STEPS[state.i];
+
+    var thread = el("section", "thread");
+    if (resumed) {
+      thread.appendChild(el("p", "resume", "Вы продолжаете с того места, где остановились в прошлый раз. Ответы сохранены. Чтобы пройти с первого вопроса, нажмите «Начать заново» вверху страницы."));
+      resumed = false;
+    }
+    thread.appendChild(el("div", "count", "Вопрос " + (state.i + 1) + " из " + STEPS.length + (s.block ? " · Работа и люди" : "")));
+    var h = el("h1", "question", s.q);
+    h.id = "q-title";
+    thread.appendChild(h);
+    thread.appendChild(el("p", "hint", s.hint));
+
+    if (s.type === "text") {
+      var ta = el("textarea");
+      ta.id = "answer-" + s.id;
+      ta.setAttribute("aria-labelledby", "q-title");
+      ta.placeholder = "Пишите своими словами. Правильных ответов нет.";
+      ta.value = state.answers[s.id] || "";
+      ta.addEventListener("input", function () { state.answers[s.id] = ta.value; save(); });
+      thread.appendChild(ta);
+    } else if (s.type === "values") {
+      thread.appendChild(renderValues());
+    } else if (s.type === "weigh") {
+      thread.appendChild(renderWeigh());
+    }
+    app.appendChild(thread);
+
+    var nav = el("nav", "steps");
+    if (state.i > 0) {
+      var back = el("button", "back", "Назад");
+      back.type = "button";
+      back.id = "btn-back";
+      back.addEventListener("click", function () { go(state.i - 1); });
+      nav.appendChild(back);
+    }
+    var next = el("button", "go", state.i === STEPS.length - 1 ? "Показать мой разбор" : "Дальше");
+    next.type = "button";
+    next.id = "btn-next";
+    next.addEventListener("click", function () { go(state.i + 1); });
+    nav.appendChild(next);
+    if (s.block) {
+      var skip = el("button", "back", "Пропустить блок «Работа и люди»");
+      skip.type = "button";
+      skip.id = "btn-skip-block";
+      skip.addEventListener("click", function () {
+        var n = state.i;
+        while (n < STEPS.length && STEPS[n].block) n++;
+        go(n);
+      });
+      nav.appendChild(skip);
+    }
+    if (s.type === "text") {
+      var skipQ = el("button", "linkbtn", "Пропустить вопрос");
+      skipQ.type = "button";
+      skipQ.id = "btn-skip-question";
+      skipQ.addEventListener("click", function () { go(state.i + 1); });
+      nav.appendChild(skipQ);
+    }
+    app.appendChild(nav);
+  }
+
+  function renderValues() {
+    var box = el("div");
+    box.style.display = "flex";
+    box.style.flexDirection = "column";
+    box.style.gap = "12px";
+    var chips = el("div", "chips");
+    var counter = el("div", "picked");
+    function refresh() {
+      counter.textContent = "Выбрано: " + state.values.length + " из 3";
+      Array.prototype.forEach.call(chips.children, function (c) {
+        var on = state.values.indexOf(c.textContent) !== -1;
+        c.setAttribute("aria-pressed", on ? "true" : "false");
+        c.disabled = !on && state.values.length >= 3;
+      });
+    }
+    VALUES.forEach(function (v, idx) {
+      var c = el("button", "chip", v);
+      c.type = "button";
+      c.id = "value-" + idx;
+      c.addEventListener("click", function () {
+        var at = state.values.indexOf(v);
+        if (at === -1) { if (state.values.length < 3) state.values.push(v); }
+        else { state.values.splice(at, 1); delete state.weigh[v]; }
+        save(); refresh();
+      });
+      chips.appendChild(c);
+    });
+    box.appendChild(chips);
+    box.appendChild(counter);
+    refresh();
+    return box;
+  }
+
+  var LEAN = [["stay", "Если останусь"], ["leave", "Если уйду"], ["same", "Одинаково"]];
+
+  function renderWeigh() {
+    var box = el("div", "weigh");
+    if (!state.values.length) {
+      box.appendChild(el("p", "hint", "Вы не выбрали ценности на прошлом шаге. Вернитесь назад и отметьте три, или идите дальше."));
+      return box;
+    }
+    state.values.forEach(function (v, vi) {
+      var row = el("div", "weigh-row");
+      row.appendChild(el("div", "weigh-name", v));
+      var seg = el("div", "seg");
+      LEAN.forEach(function (pair) {
+        var b = el("button", "chip", pair[1]);
+        b.type = "button";
+        b.id = "weigh-" + vi + "-" + pair[0];
+        b.setAttribute("aria-pressed", state.weigh[v] === pair[0] ? "true" : "false");
+        b.addEventListener("click", function () {
+          state.weigh[v] = pair[0];
+          save();
+          Array.prototype.forEach.call(seg.children, function (x) {
+            x.setAttribute("aria-pressed", x === b ? "true" : "false");
+          });
+        });
+        seg.appendChild(b);
+      });
+      row.appendChild(seg);
+      box.appendChild(row);
+    });
+    return box;
+  }
+
+  function tally() {
+    var t = { stay: 0, leave: 0, same: 0, none: 0 };
+    state.values.forEach(function (v) { t[state.weigh[v] || "none"]++; });
+    return t;
+  }
+
+  function textOf(id) {
+    var v = (state.answers[id] || "").trim();
+    return v;
+  }
+
+  function brief(s) {
+    return s.length > 700 ? s.slice(0, 700).trim() + "…" : s;
+  }
+
+  /* The summary mirrors the person's own words side by side; it never rules. */
+  function reading() {
+    var t = tally(), lines = [];
+    var friend = textOf("friend"), year = textOf("fear_stay");
+    var fear = textOf("fear_leave"), con = textOf("conscience");
+
+    if (friend) lines.push("Другу вы бы сказали: «" + brief(friend) + "»");
+    if (year) lines.push("Через год на этом же месте вы чувствуете: «" + brief(year) + "»");
+    if (con) lines.push("О своих принципах вы написали: «" + brief(con) + "»");
+    if (fear) lines.push("Уйти вам мешает: «" + brief(fear) + "»");
+    var holds = textOf("people_holds");
+    if (holds) lines.push("Кроме зарплаты и должности, вас держит: «" + brief(holds) + "»");
+
+    if (t.leave >= 2 && t.leave > t.stay) {
+      lines.push("Большинство ваших главных ценностей, по вашим же отметкам, получают шанс, если вы уйдёте.");
+    } else if (t.stay >= 2 && t.stay > t.leave) {
+      lines.push("Большинство ваших главных ценностей, по вашим же отметкам, получают шанс, если вы останетесь.");
+    } else if (t.stay + t.leave + t.same > 0) {
+      lines.push("Три главные ценности сами по себе выбор не решают. Ответ скорее в том, что вы написали своими словами.");
+    }
+
+    if (!lines.length) {
+      lines.push("Вы пока почти ничего не написали. Вернитесь к вопросам, когда будете готовы: сопоставлять можно только ваши собственные слова.");
+    } else if (friend) {
+      lines.push("Совет, который вы дали другу, вы готовы принять сами? Если нет, что именно мешает?");
+    } else {
+      lines.push("Какой из ответов было труднее всего писать? Обычно главное там.");
+    }
+    return lines;
+  }
+
+  function plainText() {
+    var out = ["УЙТИ ИЛИ ОСТАТЬСЯ: МОЙ РАЗБОР", ""];
+    STEPS.forEach(function (s) {
+      out.push(s.q);
+      if (s.type === "text") out.push(textOf(s.id) || "(без ответа)");
+      else if (s.type === "values") out.push(state.values.join(", ") || "(не выбрано)");
+      else if (s.type === "weigh") {
+        state.values.forEach(function (v) {
+          var k = state.weigh[v];
+          var label = k === "stay" ? "если останусь" : k === "leave" ? "если уйду" : k === "same" ? "одинаково" : "не отмечено";
+          out.push("- " + v + ": " + label);
+        });
+      }
+      out.push("");
+    });
+    out.push("Что показывают ответы");
+    reading().forEach(function (l) { out.push(l); });
+    if (state.after.trim()) { out.push(""); out.push("Что я теперь вижу иначе"); out.push(state.after.trim()); }
+    return out.join("\n");
+  }
+
+  function renderSummary() {
+    var sum = el("section", "sum");
+    sum.appendChild(el("h1", null, "Ваш разбор на одной странице"));
+
+    var r = el("div", "reading");
+    reading().forEach(function (l) { r.appendChild(el("p", null, l)); });
+    sum.appendChild(r);
+
+    var vb = el("div", "block");
+    vb.appendChild(el("h2", null, "Ваши главные ценности и где у них больше шансов"));
+    if (state.values.length) {
+      var ul = el("ul", "scale");
+      state.values.forEach(function (v) {
+        var li = el("li");
+        li.appendChild(el("span", null, v));
+        var k = state.weigh[v];
+        var label = k === "stay" ? "если останусь" : k === "leave" ? "если уйду" : k === "same" ? "одинаково" : "не отмечено";
+        li.appendChild(el("span", "tag " + (k || ""), label));
+        ul.appendChild(li);
+      });
+      vb.appendChild(ul);
+    } else {
+      vb.appendChild(el("p", "empty", "Не выбраны."));
+    }
+    sum.appendChild(vb);
+
+    STEPS.forEach(function (s) {
+      if (s.type !== "text") return;
+      var b = el("div", "block");
+      b.appendChild(el("h2", null, s.q));
+      var t = textOf(s.id);
+      b.appendChild(el("p", t ? null : "empty", t || "Без ответа."));
+      sum.appendChild(b);
+    });
+
+    var ab = el("div", "block");
+    var ah = el("h2", null, "Перечитайте всё написанное. Что вы теперь видите иначе?");
+    ah.id = "after-title";
+    ab.appendChild(ah);
+    var ta = el("textarea");
+    ta.id = "answer-after";
+    ta.setAttribute("aria-labelledby", "after-title");
+    ta.value = state.after;
+    ta.addEventListener("input", function () { state.after = ta.value; save(); });
+    ab.appendChild(ta);
+    sum.appendChild(ab);
+    app.appendChild(sum);
+
+    var nav = el("nav", "steps");
+    nav.style.paddingLeft = "0";
+    nav.style.marginTop = "24px";
+    var copy = el("button", "go", "Скопировать разбор");
+    copy.type = "button";
+    copy.id = "btn-copy";
+    var status = el("span", "note", "");
+    copy.addEventListener("click", function () {
+      var done = function () { status.textContent = "Скопировано. Вставьте в заметки или письмо себе."; };
+      var fail = function () { status.textContent = "Не получилось скопировать. Выделите текст на странице вручную."; };
+      try { navigator.clipboard.writeText(plainText()).then(done, fail); } catch (e) { fail(); }
+    });
+    var back = el("button", "back", "Вернуться к вопросам");
+    back.type = "button";
+    back.id = "btn-edit";
+    back.addEventListener("click", function () { go(STEPS.length - 1); });
+    var reset = el("button", "back", "Начать заново");
+    reset.type = "button";
+    reset.id = "btn-reset";
+    reset.addEventListener("click", function () {
+      state = { i: 0, answers: {}, values: [], weigh: {}, after: "" };
+      go(0);
+    });
+    nav.appendChild(copy); nav.appendChild(back); nav.appendChild(reset); nav.appendChild(status);
+    app.appendChild(nav);
+  }
+
+  function start(data) {
+    if (data && typeof data.i === "number") state = Object.assign(state, data);
+    else load();
+    render();
+  }
+
+  start({});
+})();
+</script>
+</body>
+</html>
