@@ -326,13 +326,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 
     // Кнопка записи
     var cta = el("div", "cta");
-    cta.appendChild(el("p", "cta-title", "Хотите разобрать эту ситуацию с живым человеком?"));
-    cta.appendChild(el("p", null, "Игорь Сегал, коуч. Первая встреча-знакомство длится 20 минут, проходит онлайн и оплата не требуется."));
+    cta.appendChild(el("p", "cta-title", "Хотите разобрать эту ситуацию со специалистом?"));
     var link = el("a", "go", "Записаться на встречу");
-    link.href = "index.html#kontakty";
-    link.addEventListener("click", function () { track("quiz_contact_click"); });
-    cta.appendChild(link);
-    sum.appendChild(cta);
 
     // Вывод ответов пользователя
     var answersBlock = el("div", "answers-list");
