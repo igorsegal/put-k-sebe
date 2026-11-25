@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мини-тест — путь к себе</title>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MKL26VWP8E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MKL26VWP8E');
+</script>
+<style>
+:root {
+  --paper: #eef2ef; --sheet: #f7f9f8; --ink: #17262e; --muted: #51656d;
+  --line: #cbd6d2; --accent: #2b7a74; --accent-ink: #ffffff;
+  --mark: #e6a23c; --night: #14222e; --night-ink: #e9eef0;
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101b24; --sheet: #172833; --ink: #e6ecee; --muted: #9bb0b8;
+    --line: #2a3d49; --accent: #5fc0b6; --accent-ink: #0b1915; --mark: #e6a23c; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 18px; line-height: 1.55; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 64px; display: flex; flex-direction: column; gap: 28px; }
+header.top { background: var(--night); color: var(--night-ink); }
+header.top .bar { max-width: 720px; margin: 0 auto; padding: 16px 20px; display: flex; justify-content: space-between; align-items: baseline; }
+header.top a.home { color: var(--mark); font-weight: 500; text-decoration: none; border-bottom: 2px solid var(--mark); }
+.brandline { font-family: var(--font-display); font-weight: 600; font-size: 20px; line-height: 1.3; }
+.thread { position: relative; padding-left: 30px; display: flex; flex-direction: column; gap: 22px; }
+.thread::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.thread::after { content: ""; position: absolute; left: 2px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--mark); }
+h1.question { font-family: var(--font-display); font-weight: 600; font-size: clamp(27px, 5vw, 38px); line-height: 1.18; margin: 0; }
+.hint { color: var(--muted); margin: 0; }
+textarea { width: 100%; min-height: 120px; padding: 14px 16px; font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+nav.steps { display: flex; gap: 12px; padding-left: 30px; margin-top: 20px; flex-wrap: wrap; }
+.go, .back { font: inherit; font-weight: 600; padding: 13px 26px; border-radius: 6px; cursor: pointer; }
+.go { background: var(--accent); color: var(--accent-ink); border: none; text-decoration: none; display: inline-block; }
+.back { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.sum h1 { font-family: var(--font-display); font-size: 32px; margin-bottom: 20px; }
+
+/* Стили для радио-кнопок */
+.radio-group { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.radio-label { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+.radio-label:hover { background: var(--panel); }
+.radio-label input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+
+/* Блок диагноза */
+.diagnosis { background: var(--night); color: var(--night-ink); padding: 24px; border-left: 6px solid var(--mark); margin: 24px 0; border-radius: 0 6px 6px 0; }
+.diagnosis h2 { margin-top: 0; font-family: var(--font-display); color: var(--mark); font-size: 22px; margin-bottom: 12px; }
+.diagnosis p { margin: 0 0 12px; font-size: 17px; }
+.diagnosis p:last-child { margin: 0; }
+.answers-list { margin-top: 30px; }
+.answers-list h3 { font-family: var(--font-display); font-size: 18px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+.block { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.block p { margin: 0; white-space: pre-wrap; color: var(--muted); }
+.cta { background: var(--sheet); border-left: 5px solid var(--mark); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; margin-top: 20px; }
+.cta .cta-title { font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <a class="home" href="index.html#temy">← На главную</a>
+    <button type="button" class="back" id="btn-restart" style="padding: 4px 10px; font-size: 14px;">Начать заново</button>
+  </div>
+</header>
+<div class="wrap">
+  <div class="brandline" id="quiz-title">Мини-тест</div>
+  <main id="app" aria-live="polite"></main>
+  <footer>
+    <p>Здесь никто не решает за вас. Вопросы помогают услышать собственные доводы. Ответы остаются в вашем браузере и никуда не отправляются. Это не лечение и не терапия.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var QUIZZES = {
+    "parents": {
+      title: "Пуповинная связь: когда пора резать",
+      resultBase: "Ваши ответы показывают, что вы до сих пор находитесь в эмоциональной зависимости от родителей. Вы ждете их одобрения или боитесь осуждения. Это та самая пуповина, которую пора резать.",
+      questions: [
+        { q: "Какую фразу от родителей вы слышите в своей голове до сих пор?", hint: "Ту самую, которая заставляет вас оправдываться или чувствовать вину." },
+        { q: "В чем вы до сих пор пытаетесь доказать им свою правоту?", hint: "Как будто внутри вас всё еще живет ребенок, ждущий их одобрения." },
+        { q: "За что вы чувствуете вину перед ними на самом деле?", hint: "Отделите свое реальное чувство от того, которое вам навязали." },
+        { q: "Какие их установки вы тащите в свою жизнь, хотя давно выросли?", hint: "Например: «все мужчины гуляют», «деньги — это грязь», «главное — стабильность»." },
+        { q: "Что случится, если вы перестанете играть по их правилам?", hint: "Чего вы боитесь больше: их обиды или того, что станете свободны?" },
+        { q: "Насколько сильно эта проблема влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "spouse": {
+      title: "Борьба без правил: тихая месть",
+      resultBase: "Судя по вашим ответам, в ваших отношениях есть скрытое напряжение. Вы оба ведете тихую войну, где каждый считает свои потери. Без вскрытия этих 'счетов' конфликт не решить.",
+      questions: [
+        { q: "За что вы тихо мстите своему партнеру?", hint: "Молчанием, колкостью, забытыми обещаниями, отказом в близости?" },
+        { q: "Какой «счет» вы ведете в отношениях?", hint: "Кто больше заработал, кто больше убрал, кто кому что должен?" },
+        { q: "В каких ситуациях вы надеваете маску «жертвы»?", hint: "Чтобы получить внимание или вызвать у партнера чувство вины?" },
+        { q: "Что из модели отношений ваших родителей вы бессознательно повторяете?", hint: "Сценарий, который вы клялись никогда не повторять." },
+        { q: "Если бы вы могли честно сказать партнеру всё, что накопилось, с чего бы вы начали?", hint: "Попробуйте сформулировать это без обвинений, через «я чувствую»." },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "children": {
+      title: "Тварь неблагодарная: в кого он такой???",
+      resultBase: "Вы очень стараетесь быть хорошим родителем, но ваш идеальный проект разбивается о реальность. Ребенок имеет свою волю, и это не 'неблагодарность', а его право на жизнь.",
+      questions: [
+        { q: "В какой момент вы в последний раз подумали: «В кого он такой???»", hint: "Что именно сделал или сказал ребенок, что вызвало у вас такую бурю?" },
+        { q: "Какого «идеального ребенка» вы хотели вырастить?", hint: "Отличник, послушный, всегда рядом? Или это вы сами хотели быть таким?" },
+        { q: "За что вы на самом деле наказываете или ругаете своего ребенка?", hint: "За его проступки или за то, что он не оправдал ваших ожиданий?" },
+        { q: "Какую свою нереализованную мечту вы пытаетесь прожить через него?", hint: "Будьте честны с собой." },
+        { q: "Готовы ли вы отпустить контроль и позволить ребенку ошибаться?", hint: "Что самого страшного случится, если вы перестанете его опекать?" },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "money": {
+      title: "Денежный паралич: ну, почему так??",
+      resultBase: "Ваши ответы четко дают понять, что проблема не в количестве денег, а в вашем отношении к ним. Страх потери и установки из детства блокируют ваш доход.",
+      questions: [
+        { q: "Что вы чувствуете, когда на счету появляется крупная сумма?", hint: "Радость, или сразу тревогу — как быстро ее потратить или потерять?" },
+        { q: "Какие «денежные» установки вы принесли из детства?", hint: "«Мы бедные, но гордые», «деньги портят людей», «зарабатывать честно нельзя»?" },
+        { q: "В чем вы себя саботируете, когда есть шанс заработать больше?", hint: "Отказываетесь от проектов, ленитесь, срываете дедлайны?" },
+        { q: "На что вы на самом деле тратите свою жизнь, оправдывая это нехваткой денег?", hint: "На нелюбимую работу, на ожидание, на выживание?" },
+        { q: "Если бы деньги перестали быть проблемой, от чего бы вы избавились первым делом?", hint: "Представьте, что финансовое напряжение исчезло навсегда." },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "work": {
+      title: "Крысиные бега: может хватит?",
+      resultBase: "Вы уже давно поняли, что это не ваше место, но страх неизвестности держит вас в 'крысиных бегах'. Вы платите слишком высокую цену за стабильность.",
+      questions: [
+        { q: "Почему вы до сих пор на этой работе?", hint: "Именно там зарплата, или там ваша привычная зона комфорта?" },
+        { q: "Что вы себе обещаете из года в год: «Уйду после...»?", hint: "Нового года, отпуска, дня рождения, кризиса?" },
+        { q: "Какую цену вы платите за эту стабильность?", hint: "Здоровье, нервы, время с семьей, упущенные возможности?" },
+        { q: "Если убрать зарплату и должность, что вас на самом деле там держит?", hint: "Страх, что вы больше никому не нужны? Или привычка?" },
+        { q: "Какой первый маленький шаг вы можете сделать на этой неделе, чтобы начать выбираться?", hint: "Не увольнение, а разведка: посмотреть вакансии, узнать курсы, поговорить с кем-то." },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "emigration": {
+      title: "Эмигрант поневоле: не свой среди чужих, но почти чужой среди своих",
+      resultBase: "Ваши ответы показывают, что вы все еще живете 'на чемоданах'. Вы боитесь отпустить прошлое и принять настоящее. Пока вы чувствуете вину перед теми, кто остался, вы не сможете жить здесь.",
+      questions: [
+        { q: "В какой момент вы острее всего почувствовали, что вы «чужой» на новом месте?", hint: "Языковой барьер, бытовые мелочи, отношение людей?" },
+        { q: "Перед кем вы чувствуете вину за то, что уехали?", hint: "Родители, друзья, которые остались?" },
+        { q: "Что вы никак не можете «распаковать» с прошлой жизни?", hint: "Ожидания, старые обиды или чувство, что вы всё еще в гостях?" },
+        { q: "Когда вы говорите «домой», о каком месте вы думаете?", hint: "О стране, где вы родились, или о том месте, где живете сейчас?" },
+        { q: "Что должно произойти, чтобы вы наконец разрешили себе жить здесь и сейчас?", hint: "Не «переждать», а именно жить." },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "friendship": {
+      title: "Друг или паразит?",
+      resultBase: "В вашем окружении есть люди, которые нарушают ваши границы и обесценивают ваши ресурсы. Ваши ответы показывают, что вы позволяете им это делать из страха одиночества или вины.",
+      questions: [
+        { q: "После общения с кем из вашего окружения вы чувствуете себя опустошённым?", hint: "О ком вы думаете: «Господи, ну наконец-то я дома один»?" },
+        { q: "На какие «крючки» вас чаще всего ловят эти люди?", hint: "Жалость, чувство вины, общее прошлое, обещания измениться?" },
+        { q: "А вы сами не бываете паразитом в чьей-то жизни?", hint: "В каких ситуациях вы «доите» другого человека — эмоционально, временем или деньгами?" },
+        { q: "Что вы реально теряете, продолжая тянуть эти отношения?", hint: "Часы жизни, деньги, сон, самоуважение? Назовите конкретную цену." },
+        { q: "Как перекрыть кислород паразиту, не скатываясь в скандал?", hint: "Какие слова или действия помогут спокойно и твердо закрыть эту тему?" },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    },
+    "fears": {
+      title: "Фильм ужасов в голове: поменяй кассету!",
+      resultBase: "Вы склонны к катастрофизации. Ваш мозг рисует картины, которых не существует, и парализует вашу волю. Пора выключить этот фильм ужасов.",
+      questions: [
+        { q: "Какой «фильм ужасов» вы крутите в своей голове чаще всего?", hint: "Опишите самый частый сценарий: что плохое должно случиться?" },
+        { q: "Кто «режиссер» этого фильма?", hint: "Чьи слова или поступки из прошлого заставляют вас бояться сейчас?" },
+        { q: "Как этот страх ограничивает вашу жизнь?", hint: "От чего вы отказываетесь, куда не идете, с кем не знакомитесь?" },
+        { q: "Какова вероятность, что этот ужас реально случится?", hint: "Попробуйте оценить в процентах. Это реальная опасность или фантом?" },
+        { q: "Что вы сделаете на этой неделе, чтобы «выключить» эту кассету?", hint: "Какой конкретный шаг навстречу страху вы можете сделать прямо сейчас?" },
+        { q: "Насколько сильно это влияет на вашу жизнь сейчас?", type: "radio", options: ["Справляюсь, но есть напряжение", "Мешает жить, хочу решить", "Критично, нет сил терпеть"] }
+      ]
+    }
+  };
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var topic = urlParams.get('topic') || 'parents';
+  var quizData = QUIZZES[topic] || QUIZZES['parents'];
+
+  document.getElementById('quiz-title').textContent = quizData.title;
+  document.title = quizData.title + " — Сделай себя сам";
+
+  var QUESTIONS = quizData.questions;
+  var state = { i: 0, answers: {} };
+  var app = document.getElementById("app");
+  var resumed = false;
+
+  function track(name) {
+    try { if (typeof gtag === "function") gtag("event", name, { event_category: "quiz", topic: topic }); } catch (e) {}
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function save() {
+    try { localStorage.setItem("decision-draft-" + topic, JSON.stringify(state)); } catch (e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem("decision-draft-" + topic);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && typeof s.i === "number") {
+          state = Object.assign(state, s);
+          if (state.i > 0) resumed = true;
+        }
+      }
+    } catch (e) {}
+  }
+
+  function restart() {
+    state = { i: 0, answers: {} };
+    resumed = false;
+    go(0);
+  }
+  document.getElementById("btn-restart").addEventListener("click", restart);
+
+  function go(n) {
+    state.i = Math.max(0, Math.min(QUESTIONS.length, n));
+    save();
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function render() {
+    app.textContent = "";
+    if (state.i >= QUESTIONS.length) { renderSummary(); return; }
+    var s = QUESTIONS[state.i];
+
+    var thread = el("section", "thread");
+    if (resumed) {
+      thread.appendChild(el("p", "hint", "Вы продолжаете с того места, где остановились в прошлый раз."));
+      resumed = false;
+    }
+    thread.appendChild(el("div", "hint", "Вопрос " + (state.i + 1) + " из " + QUESTIONS.length));
+    thread.appendChild(el("h1", "question", s.q));
+    thread.appendChild(el("p", "hint", s.hint));
+
+    if (s.type === "radio") {
+      var box = el("div", "radio-group");
+      s.options.forEach(function(opt, idx) {
+        var label = el("label", "radio-label");
+        var radio = el("input"); radio.type = "radio"; radio.name = "q" + state.i; radio.value = idx;
+        radio.checked = state.answers[state.i] === idx;
+        radio.addEventListener("change", function() { state.answers[state.i] = idx; save(); });
+        label.appendChild(radio);
+        label.appendChild(el("span", null, opt));
+        box.appendChild(label);
+      });
+      thread.appendChild(box);
+    } else {
+      var ta = el("textarea");
+      ta.placeholder = "Пишите своими словами. Правильных ответов нет.";
+      ta.value = state.answers[state.i] || "";
+      ta.addEventListener("input", function () { state.answers[state.i] = ta.value; save(); });
+      thread.appendChild(ta);
+    }
+
+    app.appendChild(thread);
+
+    var nav = el("nav", "steps");
+    if (state.i > 0) {
+      var back = el("button", "back", "Назад");
+      back.type = "button";
+      back.addEventListener("click", function () { go(state.i - 1); });
+      nav.appendChild(back);
+    }
+    var next = el("button", "go", state.i === QUESTIONS.length - 1 ? "Показать результат" : "Дальше");
+    next.type = "button";
+    next.addEventListener("click", function () { go(state.i + 1); });
+    nav.appendChild(next);
+    app.appendChild(nav);
+  }
+
+  function plainText() {
+    var out = [quizData.title.toUpperCase(), ""];
+    QUESTIONS.forEach(function (s, idx) {
+      out.push(s.q);
+      if (s.type === "radio") {
+         out.push(s.options[state.answers[idx]] || "(без ответа)");
+      } else {
+         out.push((state.answers[idx] || "").trim() || "(без ответа)");
+      }
+      out.push("");
+    });
+    return out.join("\n");
+  }
+
+  function renderSummary() {
+    var sum = el("section", "sum");
+    sum.appendChild(el("h1", null, "Ваш разбор готов"));
+
+    // Блок Диагноза
+    var diag = el("div", "diagnosis");
+    diag.appendChild(el("h2", null, "Предварительный вердикт:"));
+    
+    var diagText = el("p", null, quizData.resultBase);
+    diag.appendChild(diagText);
+
+    // Анализ последнего вопроса (уровень тяжести)
+    var lastAnswer = state.answers[QUESTIONS.length - 1];
+    if (lastAnswer === 0) {
+      diag.appendChild(el("p", null, "Сейчас вы справляетесь, но корень проблемы все еще здесь. Это как заклеить скотчем треснувшую деталь — работает, но ненадежно."));
+    } else if (lastAnswer === 1) {
+      diag.appendChild(el("p", null, "Проблема уже серьезно мешает вам жить. Самое время разобрать её по винтикам и починить, пока она не сломала вас окончательно."));
+    } else if (lastAnswer === 2) {
+      diag.appendChild(el("p", null, "Ситуация критическая. Вы находитесь в точке, где терпеть больше нельзя. Нужна срочная перезагрузка системы."));
+    }
+    sum.appendChild(diag);
+
+    // Кнопка записи
+    var cta = el("div", "cta");
+    cta.appendChild(el("p", "cta-title", "Хотите разобрать эту ситуацию с живым человеком?"));
+    cta.appendChild(el("p", null, "Игорь Сегал, коуч. Первая встреча-знакомство длится 20 минут, проходит онлайн и ничего не стоит."));
+    var link = el("a", "go", "Записаться на встречу");
+    link.href = "index.html#kontakty";
+    link.addEventListener("click", function () { track("quiz_contact_click"); });
+    cta.appendChild(link);
+    sum.appendChild(cta);
+
+    // Вывод ответов пользователя
+    var answersBlock = el("div", "answers-list");
+    answersBlock.appendChild(el("h3", null, "Ваши ответы (сохраните их для себя):"));
+    QUESTIONS.forEach(function (s, idx) {
+      var b = el("div", "block");
+      b.appendChild(el("div", { style: "font-weight: 600; margin-bottom: 6px;" }, s.q));
+      var t = "";
+      if (s.type === "radio") {
+        t = s.options[state.answers[idx]] || "Без ответа.";
+      } else {
+        t = (state.answers[idx] || "").trim() || "Без ответа.";
+      }
+      b.appendChild(el("p", null, t));
+      answersBlock.appendChild(b);
+    });
+    sum.appendChild(answersBlock);
+
+    app.appendChild(sum);
+    if (!state.done) { state.done = true; save(); track("quiz_complete"); }
+
+    var nav = el("nav", "steps");
+    nav.style.paddingLeft = "0";
+    nav.style.marginTop = "24px";
+    var copy = el("button", "go", "Скопировать текст");
+    copy.type = "button";
+    var status = el("span", "hint", "");
+    status.style.marginLeft = "12px";
+    copy.addEventListener("click", function () {
+      try {
+        navigator.clipboard.writeText(plainText()).then(function() {
+          status.textContent = "Скопировано.";
+          setTimeout(function() { status.textContent = ""; }, 3000);
+        });
+      } catch (e) { status.textContent = "Ошибка копирования."; }
+    });
+    nav.appendChild(copy);
+    nav.appendChild(status);
+    app.appendChild(nav);
+  }
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
