@@ -194,7 +194,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   var QUESTIONS = quizData.questions;
   var state = { i: 0, answers: {} };
   var app = document.getElementById("app");
-  var resumed = false;
 
   function track(name) {
     try { if (typeof gtag === "function") gtag("event", name, { event_category: "quiz", topic: topic }); } catch (e) {}
@@ -207,32 +206,15 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return n;
   }
 
-  function save() {
-    try { localStorage.setItem("decision-draft-" + topic, JSON.stringify(state)); } catch (e) {}
-  }
-  function load() {
-    try {
-      var raw = localStorage.getItem("decision-draft-" + topic);
-      if (raw) {
-        var s = JSON.parse(raw);
-        if (s && typeof s.i === "number") {
-          state = Object.assign(state, s);
-          if (state.i > 0) resumed = true;
-        }
-      }
-    } catch (e) {}
-  }
-
   function restart() {
     state = { i: 0, answers: {} };
-    resumed = false;
-    go(0);
+    render();
+    window.scrollTo(0, 0);
   }
   document.getElementById("btn-restart").addEventListener("click", restart);
 
   function go(n) {
     state.i = Math.max(0, Math.min(QUESTIONS.length, n));
-    save();
     render();
     window.scrollTo(0, 0);
   }
@@ -243,10 +225,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     var s = QUESTIONS[state.i];
 
     var thread = el("section", "thread");
-    if (resumed) {
-      thread.appendChild(el("p", "hint", "Вы продолжаете с того места, где остановились в прошлый раз."));
-      resumed = false;
-    }
     thread.appendChild(el("div", "hint", "Вопрос " + (state.i + 1) + " из " + QUESTIONS.length));
     thread.appendChild(el("h1", "question", s.q));
     thread.appendChild(el("p", "hint", s.hint));
@@ -257,7 +235,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         var label = el("label", "radio-label");
         var radio = el("input"); radio.type = "radio"; radio.name = "q" + state.i; radio.value = idx;
         radio.checked = state.answers[state.i] === idx;
-        radio.addEventListener("change", function() { state.answers[state.i] = idx; save(); });
+        radio.addEventListener("change", function() { state.answers[state.i] = idx; });
         label.appendChild(radio);
         label.appendChild(el("span", null, opt));
         box.appendChild(label);
@@ -267,7 +245,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       var ta = el("textarea");
       ta.placeholder = "Пишите своими словами. Правильных ответов нет.";
       ta.value = state.answers[state.i] || "";
-      ta.addEventListener("input", function () { state.answers[state.i] = ta.value; save(); });
+      ta.addEventListener("input", function () { state.answers[state.i] = ta.value; });
       thread.appendChild(ta);
     }
 
@@ -373,7 +351,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     var cta = el("div", "cta");
     cta.appendChild(el("p", "cta-title", "Хотите разобрать эту ситуацию со специалистом?"));
     var link = el("a", "go", "Записаться на встречу");
-    link.href = "index.html#kontakty";
+    // ИЗМЕНЕНА ССЫЛКА НА #zapis
+    link.href = "index.html#zapis";
     link.addEventListener("click", function () { track("quiz_contact_click"); });
     cta.appendChild(link);
     sum.appendChild(cta);
@@ -396,7 +375,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     sum.appendChild(answersBlock);
 
     app.appendChild(sum);
-    if (!state.done) { state.done = true; save(); track("quiz_complete"); }
+    if (!state.done) { state.done = true; track("quiz_complete"); }
 
     var nav = el("nav", "steps");
     nav.style.paddingLeft = "0";
@@ -418,7 +397,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     app.appendChild(nav);
   }
 
-  load();
   render();
 })();
 </script>
