@@ -14,7 +14,7 @@
 </script>
 <style>
 :root {
-  --paper: #eef2ef; --sheet: #f7f9f8; --ink: #17262e; --muted: #51656d;
+  --paper: #eef2ef; --sheet: #f7f9f8; --panel: #e2e9e5; --ink: #17262e; --muted: #51656d;
   --line: #cbd6d2; --accent: #2b7a74; --accent-ink: #ffffff;
   --mark: #e6a23c; --night: #14222e; --night-ink: #e9eef0;
   --font-display: Georgia, "Times New Roman", serif;
@@ -23,7 +23,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #101b24; --sheet: #172833; --ink: #e6ecee; --muted: #9bb0b8;
+    --paper: #101b24; --sheet: #172833; --panel: #17283380; --ink: #e6ecee; --muted: #9bb0b8;
     --line: #2a3d49; --accent: #5fc0b6; --accent-ink: #0b1915; --mark: #e6a23c; color-scheme: dark;
   }
 }
@@ -61,6 +61,7 @@ nav.steps { display: flex; gap: 12px; padding-left: 30px; margin-top: 20px; flex
 .answers-list { margin-top: 40px; }
 .answers-list h3 { font-family: var(--font-display); font-size: 18px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
 .block { border-bottom: 1px solid var(--line); padding: 16px 0; }
+.block-q { font-weight: 600; margin-bottom: 6px; color: var(--ink); }
 .block p { margin: 0; white-space: pre-wrap; color: var(--muted); font-size: 16px; }
 .cta { background: var(--sheet); border-left: 5px solid var(--mark); padding: 24px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; margin-top: 30px; }
 .cta .cta-title { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.3; margin: 0; }
@@ -299,28 +300,24 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     var resultText = "";
 
     if (answeredCount === 0) {
-      // 0 ОТВЕТОВ
       if (topic === "fears") {
         resultText = "Вы не дали ни одного ответа. Это тоже результат. Иногда страх настолько велик, что мы боимся даже написать о нем. Если решитесь посмотреть в глаза своим фантомам — возвращайтесь. Я помогу их развеять.";
       } else {
         resultText = "Вы не ответили ни на один вопрос. Возможно, вам сейчас слишком тяжело об этом говорить. Если захотите разобрать свою ситуацию — возвращайтесь, я готов помочь.";
       }
     } else if (answeredCount >= 1 && answeredCount <= 2) {
-      // 1-2 ОТВЕТА (КАЧЕЛИ)
       if (topic === "fears") {
         resultText = "Вы начали и тут же отступили. Страх парализует даже процесс разбора. Эти «качели» — попытка защититься от правды. Вы приоткрыли дверь, но испугались того, что можете там увидеть. Готовы посмотреть в лицо своему ужасу?";
       } else {
         resultText = "Вы начали разбор, но остановились. Это классическое сопротивление — вы приоткрыли дверь, но испугались того, что можете там увидеть. Качели между «хочу решить» и «страшно трогать» изматывают сильнее самой проблемы.";
       }
     } else if (answeredCount >= 3 && answeredCount <= 4) {
-      // 3-4 ОТВЕТА (САБОТАЖ)
       if (topic === "fears") {
         resultText = "Вы прошли половину пути и испугались. Увидели, насколько глубоко сидит фантом, и сбежали. Это саботаж. Остановка на полпути только укрепляет страх. Пора довести дело до конца.";
       } else {
         resultText = "Вы прошли больше половины, но свернули. Вы увидели масштаб проблемы и решили отступить. Это саботаж. Чтобы починить механизм, нужно видеть всю картину целиком, а не половину. Вы остановились на полпути к выходу из клетки.";
       }
     } else {
-      // 5-6 ОТВЕТОВ (ПОЛНЫЙ РАЗБОР)
       var lastAnswer = state.answers[QUESTIONS.length - 1];
       
       if (topic === "fears") {
@@ -332,7 +329,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           resultText = "Паралич воли. Вы больше не управляете своей жизнью, страх управляет вами. Терпеть это дальше — преступление против себя. Нужна срочная перезагрузка.";
         }
       } else {
-        // Для остальных тем базовый текст + уровень тяжести
         resultText = quizData.resultBase;
         if (lastAnswer === 0) {
           resultText += " Пока вы справляетесь, но система дает сбои. Это как заклеить треснувшую деталь скотчем — работает, но до первого серьезного стресса.";
@@ -351,8 +347,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     var cta = el("div", "cta");
     cta.appendChild(el("p", "cta-title", "Хотите разобрать эту ситуацию со специалистом?"));
     var link = el("a", "go", "Записаться на встречу");
-    // ИЗМЕНЕНА ССЫЛКА НА #zapis
-    link.href = "index.html#zapis";
+    link.href = "index.html#kontakty";
     link.addEventListener("click", function () { track("quiz_contact_click"); });
     cta.appendChild(link);
     sum.appendChild(cta);
@@ -362,7 +357,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     answersBlock.appendChild(el("h3", null, "Ваши ответы (сохраните их для себя):"));
     QUESTIONS.forEach(function (s, idx) {
       var b = el("div", "block");
-      b.appendChild(el("div", { style: "font-weight: 600; margin-bottom: 6px; color: var(--ink);" }, s.q));
+      b.appendChild(el("div", "block-q", s.q));
       var t = "";
       if (s.type === "radio") {
         t = s.options[state.answers[idx]] || "Без ответа.";
